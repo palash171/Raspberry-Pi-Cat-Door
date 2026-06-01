@@ -1,0 +1,12 @@
+.DS_Store
+camera-preview-cpp/camera_preview
+.idea/
+*.iml
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+env/
+.env
+software/captures/
