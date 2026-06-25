@@ -1,5 +1,11 @@
 .DS_Store
-camera-preview-cpp/camera_preview
+camera-preview-cpp/
+prototype/
+rendered/
+raspberry-pi-progress-log.txt
+java-plan-skeleton/
+mates coding stuff/
+pi0/
 .idea/
 *.iml
 __pycache__/

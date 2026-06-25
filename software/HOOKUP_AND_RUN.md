@@ -1,38 +1,35 @@
 # Hookup And Run
 
-This document is the deployment checklist for the Raspberry Pi build.
+This guide is for getting the cat door software running on a Raspberry Pi.
+It is written for the normal case where the code is already cloned and the next
+job is to configure the Pi, wire the hardware, and test each stage in order.
 
-## 1. Deployment target
+## 1. Open the project on the Pi
 
-The deployment target is a Raspberry Pi system with:
+From the cloned repository:
 
-- Raspberry Pi OS
-- Pi camera connected and enabled
-- PIR motion sensor
-- reed switch on the flap
-- servo or actuator controller for the door
-- internet access for Telegram
+```bash
+cd software
+```
 
-## 2. Software setup on the Raspberry Pi
-
-From the `software/` directory on the Pi, the preferred setup command is:
+## 2. Run the first-time setup
 
 ```bash
 ./setup_pi.sh
 ```
 
-Equivalent manual setup:
+This creates the virtual environment, installs the Python packages, and creates
+`.env` from `.env.example` if it does not already exist.
+
+## 3. Edit `.env`
+
+Open the local config file:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
+nano .env
 ```
 
-## 3. Required `.env` values
-
-Populate these values before running the system:
+For a normal setup, these are the main values to fill in or check:
 
 ```env
 CAT_DOOR_TELEGRAM_BOT_TOKEN=
@@ -45,30 +42,25 @@ CAT_DOOR_ENABLE_GPIO_HARDWARE=true
 CAT_DOOR_ENABLE_SERVO_HARDWARE=true
 CAT_DOOR_NOTIFY_ON_ANY_MOTION=true
 CAT_DOOR_DETECTOR_MODE=disabled
+CAT_DOOR_CAMERA_CAPTURE_TIMEOUT_MS=250
+CAT_DOOR_PIR_SETTLE_SECONDS=90
 ```
 
-The first live deployment uses manual Telegram approval, so the detector stays
-disabled during initial hardware testing.
+## 4. What each important setting means
 
-For Pi bring-up before hardware is attached, temporarily use:
+- `CAT_DOOR_TELEGRAM_BOT_TOKEN`: token from BotFather
+- `CAT_DOOR_TELEGRAM_CHAT_ID`: your private Telegram chat ID
+- `CAT_DOOR_PIR_PIN`: GPIO pin used by the PIR output wire
+- `CAT_DOOR_REED_SWITCH_PIN`: GPIO pin used by the reed switch
+- `CAT_DOOR_SERVO_PIN`: GPIO pin used for the servo signal
+- `CAT_DOOR_ENABLE_GPIO_HARDWARE`: set this to `true` when the hardware is attached
+- `CAT_DOOR_ENABLE_SERVO_HARDWARE`: set this to `false` if the servo is not attached yet
+- `CAT_DOOR_CAMERA_CAPTURE_TIMEOUT_MS`: how quickly the snapshot is taken after trigger
+- `CAT_DOOR_PIR_SETTLE_SECONDS`: how long the PIR gets to settle before arming
 
-```env
-CAT_DOOR_ENABLE_GPIO_HARDWARE=false
-CAT_DOOR_ENABLE_SERVO_HARDWARE=false
-```
+## 5. Test in this order
 
-## 4. Hardware hookup notes
-
-- Connect the Pi camera to a camera ribbon port on the Raspberry Pi
-- Connect the PIR output wire to `CAT_DOOR_PIR_PIN`
-- Connect the reed-switch signal wire to `CAT_DOOR_REED_SWITCH_PIN`
-- Connect the servo signal wire to `CAT_DOOR_SERVO_PIN`
-- Share ground between the Raspberry Pi and the servo power supply
-- Do not power the servo directly from a GPIO signal pin
-
-## 5. Runtime verification order
-
-Run these checks from the `software/` directory in this order:
+Run these one by one from inside `software/`:
 
 ```bash
 ./run_cat_door.sh status
@@ -78,69 +70,41 @@ Run these checks from the `software/` directory in this order:
 ./run_cat_door.sh monitor-once
 ```
 
-Use this command only after the single-event test is successful:
+What they do:
+
+- `status` checks whether the camera, PIR, reed switch, and servo backends are available
+- `text-test` checks Telegram text delivery
+- `approval-test` checks the Telegram approval buttons
+- `photo-test` captures and sends one photo immediately
+- `monitor-once` waits for one PIR event and runs the full workflow once
+
+## 6. Before the servo or reed switch is attached
+
+If you are only testing the camera and PIR first, keep this in `.env`:
+
+```env
+CAT_DOOR_ENABLE_SERVO_HARDWARE=false
+```
+
+That lets the system run without trying to move the door.
+
+## 7. Start continuous monitoring only after single tests pass
 
 ```bash
 ./run_cat_door.sh monitor-loop
 ```
 
-To keep the system running automatically after boot once validation is done:
+## 8. Install the boot service only after everything is stable
 
 ```bash
 ./install_cat_door_service.sh
 ```
 
-## 6. Expected results
+Then check it with:
 
-### `status`
-
-Confirms whether the PIR, reed switch, servo controller, and detector backends
-are available.
-
-### `text-test`
-
-Sends a Telegram text message to verify network connectivity and bot access.
-
-### `approval-test`
-
-Sends Telegram approval buttons and confirms that a button press is received by
-the application.
-
-### `photo-test`
-
-Captures a real image with the first available Raspberry Pi camera command
-(`rpicam-still`, `libcamera-still`, or `raspistill`), sends it to Telegram,
-and runs the approval-button flow.
-
-### `monitor-once`
-
-Waits for one PIR event, captures an image, sends it to Telegram, and opens the
-door only when the operator approves the event.
-
-## 7. Detector command format
-
-When `CAT_DOOR_DETECTOR_MODE=command`, the configured detector command must
-write JSON to standard output in this format:
-
-```json
-{
-  "is_cat_likely": true,
-  "confidence": 0.93,
-  "reason": "cat detected near flap"
-}
+```bash
+sudo systemctl status cat-door-monitor.service --no-pager
 ```
 
-If `is_cat_likely` is omitted, the software falls back to the confidence
-threshold in `.env`.
-
-The repository includes `detectors/template_detector.py` as the starting point
-for a future image-based cat detector.
-
-## 8. Expected live workflow
-
-1. PIR sensor triggers
-2. Camera captures a snapshot
-3. Telegram sends the snapshot to the operator
-4. Operator selects `Open Door` or `Keep Closed`
-5. Door opens temporarily when approved
-6. Reed switch is checked after the close cycle
+That service is the final always-on mode. Do not enable it until the single-run
+checks above are working properly.

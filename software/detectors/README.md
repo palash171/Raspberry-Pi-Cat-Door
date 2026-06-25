@@ -1,12 +1,24 @@
 # Detector Integration
 
-The main software can optionally call an external detector command after each
-captured image.
+The current project works without a detector. The main live workflow is manual
+approval through Telegram.
 
-## Command contract
+This folder is only for the next step, where an image-based detector may be
+added later to help decide whether a captured image is likely to contain a cat.
 
-When `CAT_DOOR_DETECTOR_MODE=command`, the configured command must write JSON
-to standard output in this format:
+## Current behaviour
+
+- PIR triggers the event
+- the camera captures a photo
+- Telegram sends the photo to the user
+- the user chooses whether to open the door
+
+## Optional command interface
+
+If `CAT_DOOR_DETECTOR_MODE=command`, the app will run an external command after
+capturing an image.
+
+That command must print JSON like this:
 
 ```json
 {
@@ -16,31 +28,14 @@ to standard output in this format:
 }
 ```
 
-If `is_cat_likely` is omitted, the main app falls back to the configured
-confidence threshold.
+## Included template
 
-## Template command
+`template_detector.py` is only a placeholder example. It is not a real model.
+It just shows the JSON format expected by the main application.
 
-This folder includes `template_detector.py` as a minimal placeholder detector.
-It is not a real model. It only proves the JSON interface works.
-
-Example `.env` values for command-mode testing:
+Example `.env` value:
 
 ```env
 CAT_DOOR_DETECTOR_MODE=command
 CAT_DOOR_DETECTOR_COMMAND=.venv/bin/python detectors/template_detector.py {image_path}
 ```
-
-## Recommended live architecture
-
-The intended production flow is:
-
-1. PIR sensor triggers the event
-2. Camera captures an image
-3. Detector command classifies the image
-4. Telegram sends the image and detector result
-5. Operator approves or rejects the event
-
-The PIR sensor should be treated as the wake-up trigger, not the final cat
-classifier. The image detector is the right place to distinguish a cat from a
-human or other motion.
