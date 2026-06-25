@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 
 from .camera import Camera
 from .config import load_config
@@ -37,10 +38,16 @@ def main() -> None:
     args = build_parser().parse_args()
     config = load_config()
 
+    if config.gpiozero_pin_factory:
+        os.environ.setdefault("GPIOZERO_PIN_FACTORY", config.gpiozero_pin_factory)
+
     # Build each subsystem once, then hand the assembled runtime into the
     # workflow layer that coordinates the event flow.
     workflow = CatDoorWorkflow(
-        camera=Camera(config.image_output_dir),
+        camera=Camera(
+            config.image_output_dir,
+            capture_timeout_ms=config.camera_capture_timeout_ms,
+        ),
         detector=Detector(
             mode=config.detector_mode,
             command=config.detector_command,
@@ -72,6 +79,7 @@ def main() -> None:
         approval_timeout_seconds=config.approval_timeout_seconds,
         notify_on_any_motion=config.notify_on_any_motion,
         monitor_poll_interval_seconds=config.monitor_poll_interval_seconds,
+        gpiozero_pin_factory=config.gpiozero_pin_factory,
     )
 
     if args.mode == "show-chat-id":

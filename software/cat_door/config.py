@@ -17,12 +17,14 @@ class AppConfig:
     reed_switch_pin: int = 27
     servo_pin: int = 18
     image_output_dir: str = "captures"
+    camera_capture_timeout_ms: int = 250
     motion_cooldown_seconds: int = 30
     door_open_seconds: int = 5
     approval_timeout_seconds: int = 60
     monitor_poll_interval_seconds: float = 1.0
     pir_settle_seconds: float = 3.0
     notify_on_any_motion: bool = True
+    gpiozero_pin_factory: str = ""
     detector_mode: str = "disabled"
     detector_command: str = ""
     detector_command_timeout_seconds: int = 30
@@ -71,6 +73,9 @@ def load_config() -> AppConfig:
         reed_switch_pin=int(os.getenv("CAT_DOOR_REED_SWITCH_PIN", "27")),
         servo_pin=int(os.getenv("CAT_DOOR_SERVO_PIN", "18")),
         image_output_dir=os.getenv("CAT_DOOR_IMAGE_OUTPUT_DIR", "captures"),
+        camera_capture_timeout_ms=int(
+            os.getenv("CAT_DOOR_CAMERA_CAPTURE_TIMEOUT_MS", "250")
+        ),
         motion_cooldown_seconds=int(
             os.getenv("CAT_DOOR_MOTION_COOLDOWN_SECONDS", "30")
         ),
@@ -83,6 +88,7 @@ def load_config() -> AppConfig:
         ),
         pir_settle_seconds=float(os.getenv("CAT_DOOR_PIR_SETTLE_SECONDS", "3.0")),
         notify_on_any_motion=_get_bool_env("CAT_DOOR_NOTIFY_ON_ANY_MOTION", True),
+        gpiozero_pin_factory=os.getenv("CAT_DOOR_GPIOZERO_PIN_FACTORY", "").strip(),
         detector_mode=os.getenv("CAT_DOOR_DETECTOR_MODE", "disabled"),
         detector_command=os.getenv("CAT_DOOR_DETECTOR_COMMAND", ""),
         detector_command_timeout_seconds=int(

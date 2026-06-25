@@ -38,3 +38,26 @@
 - Local Mac validation confirms software behavior but not GPIO hardware access
 - Camera capture, PIR events, servo movement, and reed-switch validation remain
   Raspberry Pi tasks
+
+## 2026-06-03
+
+### Environment
+
+- Raspberry Pi 5
+- Raspberry Pi OS
+- Python 3.11.2
+- `rpicam-still` available on the host
+
+### Validation summary
+
+- Verified project transfer and execution on Raspberry Pi 5
+- Verified dependency installation in a Pi-hosted virtual environment
+- Verified wrapper-script execution with the Pi 5 runtime
+- Verified Telegram text delivery with `text-test`
+- Verified Telegram approval-button callback handling with `approval-test`
+
+### Notes
+
+- Camera, PIR, reed switch, and servo were not attached during this validation
+- GPIO warnings were observed before adding explicit Pi pin-factory support and
+  Linux GPIO dependencies to the project setup

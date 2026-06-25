@@ -26,6 +26,7 @@ class CatDoorWorkflow:
         approval_timeout_seconds: int,
         notify_on_any_motion: bool,
         monitor_poll_interval_seconds: float,
+        gpiozero_pin_factory: str,
     ) -> None:
         self.camera = camera
         self.detector = detector
@@ -37,6 +38,7 @@ class CatDoorWorkflow:
         self.approval_timeout_seconds = approval_timeout_seconds
         self.notify_on_any_motion = notify_on_any_motion
         self.monitor_poll_interval_seconds = monitor_poll_interval_seconds
+        self.gpiozero_pin_factory = gpiozero_pin_factory
         self._last_motion_timestamp: float | None = None
 
     def show_latest_chat_id(self) -> None:
@@ -80,6 +82,10 @@ class CatDoorWorkflow:
         print(f"- {self.reed_switch.describe()}")
         print(f"- {self.door_controller.describe()}")
         print(f"- {self.detector.describe()}")
+        print(
+            "- GPIOZero pin factory: "
+            f"{self.gpiozero_pin_factory or 'auto-detect'}"
+        )
         print(f"- Motion cooldown: {self.motion_cooldown_seconds} seconds")
         print(f"- Approval timeout: {self.approval_timeout_seconds} seconds")
         print(f"- Notify on any motion: {self.notify_on_any_motion}")

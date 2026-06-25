@@ -1,2 +1,3 @@
 gpiozero
+lgpio; platform_system == "Linux"
 requests

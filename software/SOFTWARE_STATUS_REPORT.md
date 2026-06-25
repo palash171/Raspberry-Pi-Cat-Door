@@ -16,6 +16,8 @@ workflow.
 - PIR, reed-switch, and servo software abstractions implemented
 - End-to-end event workflow implemented in software
 - Manual-approval deployment mode prepared for first live hardware test
+- Pi bootstrap and autostart scripts prepared for deployment handoff
+- Detector-command scaffold prepared for future cat classification
 
 ## Completed local validation
 
@@ -24,6 +26,7 @@ workflow.
 - Telegram approval-button callback handling
 - Wrapper-script execution
 - Non-Pi fallback behavior for GPIO-backed components
+- Raspberry Pi 5 validation of `status`, `text-test`, and `approval-test`
 
 ## Remaining work
 
@@ -31,7 +34,7 @@ workflow.
 - PIR hardware validation
 - Servo open/close validation
 - Reed-switch validation
-- Final detector decision for production use
+- Real image-based detector implementation and validation
 
 ## Current deployment recommendation
 
@@ -43,5 +46,5 @@ Use the manual-approval workflow for first hardware deployment:
 
 ## Current blocker
 
-The remaining validation work depends on access to the Raspberry Pi hardware
-platform and connected components.
+The remaining validation work depends on connected camera, PIR, reed switch,
+and servo hardware on the Raspberry Pi platform.

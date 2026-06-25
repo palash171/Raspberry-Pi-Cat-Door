@@ -19,6 +19,13 @@ Automatic cat recognition is scaffolded in the codebase, but the delivered
 software is currently set up for manual Telegram approval as the primary live
 workflow.
 
+The package also includes deployment helpers so the Raspberry Pi handoff stays
+lightweight:
+
+- `setup_pi.sh`: creates the venv, installs dependencies, and seeds `.env`
+- `install_cat_door_service.sh`: installs `monitor-loop` as a systemd service
+- `detectors/template_detector.py`: placeholder detector-command script
+
 ## Project documents
 
 - `SOFTWARE_PLAN.md`: architecture and system scope
@@ -39,6 +46,9 @@ workflow.
 - `cat_door/sensors.py`: PIR and reed switch access
 - `cat_door/door_controller.py`: servo control and simulation fallback
 - `cat_door/detector.py`: detector-mode handling
+- `detectors/template_detector.py`: JSON detector command template
+- `setup_pi.sh`: Raspberry Pi bootstrap helper
+- `install_cat_door_service.sh`: boot-time monitor installer
 
 ## How to run the software
 
@@ -48,6 +58,12 @@ Preferred wrapper:
 
 ```bash
 ./run_cat_door.sh <mode>
+```
+
+Preferred Raspberry Pi setup:
+
+```bash
+./setup_pi.sh
 ```
 
 Direct module form:
@@ -78,3 +94,4 @@ Do not run `camera.py`, `workflow.py`, or the other module files directly.
 - Change workflow logic in `cat_door/workflow.py`
 - Change PIR, reed-switch, or servo settings in `.env` and `cat_door/config.py`
 - Change hardware wrappers in `cat_door/sensors.py` and `cat_door/door_controller.py`
+- Change detector-command behavior in `cat_door/detector.py` and `detectors/`

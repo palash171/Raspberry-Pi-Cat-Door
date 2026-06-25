@@ -48,10 +48,7 @@ Primary runtime command:
 3. Run:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
+./setup_pi.sh
 ```
 
 4. Populate `.env` with:
@@ -62,11 +59,21 @@ CAT_DOOR_TELEGRAM_CHAT_ID=
 CAT_DOOR_PIR_PIN=17
 CAT_DOOR_REED_SWITCH_PIN=27
 CAT_DOOR_SERVO_PIN=18
+CAT_DOOR_GPIOZERO_PIN_FACTORY=lgpio
 CAT_DOOR_ENABLE_GPIO_HARDWARE=true
 CAT_DOOR_ENABLE_SERVO_HARDWARE=true
 CAT_DOOR_NOTIFY_ON_ANY_MOTION=true
 CAT_DOOR_DETECTOR_MODE=disabled
 ```
+
+If the Pi is being staged before the hardware is attached, set:
+
+```env
+CAT_DOOR_ENABLE_GPIO_HARDWARE=false
+CAT_DOOR_ENABLE_SERVO_HARDWARE=false
+```
+
+Then switch them back to `true` after wiring is complete.
 
 ## Hardware checklist
 
@@ -95,6 +102,12 @@ Move to continuous monitoring only after the single-event test is stable:
 ./run_cat_door.sh monitor-loop
 ```
 
+After the live checks pass, install the boot-time monitor service:
+
+```bash
+./install_cat_door_service.sh
+```
+
 ## Expected outcomes
 
 - `status`: confirms runtime backend availability
@@ -118,6 +131,9 @@ this format:
   "reason": "cat detected near flap"
 }
 ```
+
+The repository includes `detectors/template_detector.py` as the placeholder
+starting point for a future image-based detector.
 
 ## Escalation points
 

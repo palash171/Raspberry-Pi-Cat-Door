@@ -15,7 +15,13 @@ The deployment target is a Raspberry Pi system with:
 
 ## 2. Software setup on the Raspberry Pi
 
-From the `software/` directory on the Pi:
+From the `software/` directory on the Pi, the preferred setup command is:
+
+```bash
+./setup_pi.sh
+```
+
+Equivalent manual setup:
 
 ```bash
 python3 -m venv .venv
@@ -34,6 +40,7 @@ CAT_DOOR_TELEGRAM_CHAT_ID=
 CAT_DOOR_PIR_PIN=17
 CAT_DOOR_REED_SWITCH_PIN=27
 CAT_DOOR_SERVO_PIN=18
+CAT_DOOR_GPIOZERO_PIN_FACTORY=lgpio
 CAT_DOOR_ENABLE_GPIO_HARDWARE=true
 CAT_DOOR_ENABLE_SERVO_HARDWARE=true
 CAT_DOOR_NOTIFY_ON_ANY_MOTION=true
@@ -42,6 +49,13 @@ CAT_DOOR_DETECTOR_MODE=disabled
 
 The first live deployment uses manual Telegram approval, so the detector stays
 disabled during initial hardware testing.
+
+For Pi bring-up before hardware is attached, temporarily use:
+
+```env
+CAT_DOOR_ENABLE_GPIO_HARDWARE=false
+CAT_DOOR_ENABLE_SERVO_HARDWARE=false
+```
 
 ## 4. Hardware hookup notes
 
@@ -70,6 +84,12 @@ Use this command only after the single-event test is successful:
 ./run_cat_door.sh monitor-loop
 ```
 
+To keep the system running automatically after boot once validation is done:
+
+```bash
+./install_cat_door_service.sh
+```
+
 ## 6. Expected results
 
 ### `status`
@@ -88,8 +108,9 @@ the application.
 
 ### `photo-test`
 
-Captures a real image with `rpicam-still`, sends it to Telegram, and runs the
-approval-button flow.
+Captures a real image with the first available Raspberry Pi camera command
+(`rpicam-still`, `libcamera-still`, or `raspistill`), sends it to Telegram,
+and runs the approval-button flow.
 
 ### `monitor-once`
 
@@ -111,6 +132,9 @@ write JSON to standard output in this format:
 
 If `is_cat_likely` is omitted, the software falls back to the confidence
 threshold in `.env`.
+
+The repository includes `detectors/template_detector.py` as the starting point
+for a future image-based cat detector.
 
 ## 8. Expected live workflow
 
