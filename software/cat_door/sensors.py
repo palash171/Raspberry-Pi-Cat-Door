@@ -25,6 +25,8 @@ class PirSensor:
         self.settle_seconds = settle_seconds
         self._sensor = None
         self._backend_error: str | None = None
+        self._arm_calm_seconds = 2.0
+        self._arm_timeout_seconds = 30.0
 
         # The class falls back to a "not available" state on non-Pi machines so
         # the rest of the software can still be developed and tested locally.
@@ -57,12 +59,47 @@ class PirSensor:
         return bool(self._sensor.motion_detected)
 
     def wait_for_motion(self, timeout_seconds: float | None) -> bool:
-        """Wait for motion and return whether the sensor triggered."""
+        """Wait for a fresh motion event after the PIR has gone calm."""
         if not self._sensor:
+            return False
+
+        if not self._wait_until_calm(
+            calm_seconds=self._arm_calm_seconds,
+            timeout_seconds=self._arm_timeout_seconds,
+        ):
+            self._backend_error = (
+                "PIR sensor did not become calm before arming. "
+                "Try reducing sensitivity or moving heat sources away."
+            )
             return False
 
         self._sensor.wait_for_motion(timeout=timeout_seconds)
         return bool(self._sensor.motion_detected)
+
+    def _wait_until_calm(
+        self,
+        calm_seconds: float,
+        timeout_seconds: float,
+    ) -> bool:
+        """Require a short calm period before treating motion as a fresh event."""
+        if not self._sensor:
+            return False
+
+        deadline = time.monotonic() + timeout_seconds
+        calm_start: float | None = None
+
+        while time.monotonic() < deadline:
+            if self._sensor.motion_detected:
+                calm_start = None
+            else:
+                if calm_start is None:
+                    calm_start = time.monotonic()
+                elif time.monotonic() - calm_start >= calm_seconds:
+                    return True
+
+            time.sleep(0.1)
+
+        return False
 
 
 class ReedSwitch:
