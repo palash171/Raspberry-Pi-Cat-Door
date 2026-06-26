@@ -189,7 +189,6 @@ class CatDoorWorkflow:
 
         if action == "Open Door":
             self.door_controller.open_temporarily()
-            self._report_reed_switch_state()
 
         return detection
 
@@ -241,14 +240,7 @@ class CatDoorWorkflow:
         )
         return selected_label
 
-    def _report_reed_switch_state(self) -> None:
-        """Report the flap state after an open cycle."""
-        if self.reed_switch.is_closed():
-            print("Reed switch reports the flap is closed.")
-        else:
-            warning_text = "Warning: reed switch reports the flap is still open."
-            print(warning_text)
-            self.telegram_bot.send_message(warning_text)
+
 
     def _cooldown_remaining_seconds(self) -> float:
         if self._last_motion_timestamp is None:
